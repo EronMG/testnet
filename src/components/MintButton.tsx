@@ -5,6 +5,8 @@ import { createNft } from '@metaplex-foundation/mpl-token-metadata';
 import { generateSigner, percentAmount } from '@metaplex-foundation/umi';
 import { base58 } from '@metaplex-foundation/umi/serializers';
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+
 export const MintButton = ({ 
   metadataUri, 
   name, 
@@ -25,40 +27,93 @@ export const MintButton = ({
   const [showSuccess, setShowSuccess] = useState(false);
   const [hasAlreadyMinted, setHasAlreadyMinted] = useState(false);
 
-  // Проверяем, заминтил ли уже этот кошелёк NFT и загружаем данные о транзакции
+  // Проверяем, заминтил ли уже этот кошелёк NFT через API
   useEffect(() => {
-    // Сбрасываем ошибку при смене кошелька
-    setError(null);
-    
-    if (wallet.publicKey) {
-      const mintedWallets = JSON.parse(localStorage.getItem('mintedWallets') || '[]');
-      const walletAddress = wallet.publicKey.toBase58();
-      const hasMinted = mintedWallets.includes(walletAddress);
-      setHasAlreadyMinted(hasMinted);
-      
-      // Если кошелёк уже минтил, загружаем адрес его транзакции и показываем успешное сообщение
-      if (hasMinted) {
-        const savedMintAddress = localStorage.getItem(`mintAddress_${walletAddress}`);
-        if (savedMintAddress) {
-          setMintAddress(savedMintAddress);
-          setShowSuccess(true);
-        } else {
-          // Если кошелёк минтил, но адрес транзакции не сохранился, всё равно показываем успех
-          setShowSuccess(true);
-        }
-      } else {
-        // Сбрасываем данные для нового кошелька
+    const checkMintStatus = async () => {
+      if (!wallet.publicKey) {
+        setHasAlreadyMinted(false);
         setMintAddress(null);
         setShowSuccess(false);
+        setError(null);
+        return;
       }
-    } else {
-      // Сбрасываем все состояния если кошелёк отключен
-      setHasAlreadyMinted(false);
-      setMintAddress(null);
-      setShowSuccess(false);
-      setError(null);
-    }
+
+      try {
+        const walletAddress = wallet.publicKey.toBase58();
+        const response = await fetch(`${API_BASE_URL}/api/mint-status/${walletAddress}`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to check mint status');
+        }
+
+        const data = await response.json();
+        
+        if (data.hasMinted && data.mintData) {
+          setHasAlreadyMinted(true);
+          setMintAddress(data.mintData.transaction_signature);
+          setShowSuccess(true);
+          console.log('E123:');
+        } else {
+          setHasAlreadyMinted(false);
+          setMintAddress(null);
+          setShowSuccess(false);
+        }
+        setError(null);
+      } catch (error) {
+        console.error('Error checking mint status:', error);
+        // Fallback to localStorage if API is not available
+        const mintedWallets = JSON.parse(localStorage.getItem('mintedWallets') || '[]');
+        const walletAddress = wallet.publicKey.toBase58();
+        const hasMinted = mintedWallets.includes(walletAddress);
+        setHasAlreadyMinted(hasMinted);
+        
+        if (hasMinted) {
+          const savedMintAddress = localStorage.getItem(`mintAddress_${walletAddress}`);
+          if (savedMintAddress) {
+            setMintAddress(savedMintAddress);
+            setShowSuccess(true);
+          } else {
+            setShowSuccess(true);
+          }
+        }
+      }
+    };
+
+    setError(null);
+    checkMintStatus();
   }, [wallet.publicKey]);
+
+  const recordMintToAPI = async (walletAddress: string, transactionSignature: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/record-mint`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          walletAddress,
+          transactionSignature,
+          mintAddress: transactionSignature // Using signature as mint identifier
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to record mint');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error recording mint to API:', error);
+      // Fallback to localStorage
+      const mintedWallets = JSON.parse(localStorage.getItem('mintedWallets') || '[]');
+      if (!mintedWallets.includes(walletAddress)) {
+        mintedWallets.push(walletAddress);
+        localStorage.setItem('mintedWallets', JSON.stringify(mintedWallets));
+      }
+      localStorage.setItem(`mintAddress_${walletAddress}`, transactionSignature);
+      throw error;
+    }
+  };
 
   const onMint = useCallback(async () => {
     if (!wallet.connected) {
@@ -74,7 +129,19 @@ export const MintButton = ({
     setLoading(true);
     setError(null);
     setMintAddress(null);
+    
     try {
+      // Check current supply before minting
+      const supplyResponse = await fetch(`${API_BASE_URL}/api/mint-count`);
+      if (supplyResponse.ok) {
+        const supplyData = await supplyResponse.json();
+        if (supplyData.count >= 400) {
+          setError('Максимальный лимит достигнут! Все 400 NFT уже заминчены.');
+          setLoading(false);
+          return;
+        }
+      }
+
       const mint = generateSigner(umi);
       
       let nftName = name;
@@ -104,17 +171,21 @@ export const MintButton = ({
       
       // Конвертируем signature в base58 строку
       const signatureString = base58.deserialize(signature)[0];
-      
-      // Сохраняем адрес кошелька в список заминтивших
-      const mintedWallets = JSON.parse(localStorage.getItem('mintedWallets') || '[]');
       const walletAddress = wallet.publicKey!.toBase58();
-      if (!mintedWallets.includes(walletAddress)) {
-        mintedWallets.push(walletAddress);
-        localStorage.setItem('mintedWallets', JSON.stringify(mintedWallets));
-      }
       
-      // Сохраняем адрес транзакции для этого кошелька
-      localStorage.setItem(`mintAddress_${walletAddress}`, signatureString);
+      // Записываем минт в API
+      try {
+        const response = await recordMintToAPI(walletAddress, signatureString);
+        if (response.totalMinted) {
+          console.log(`Total minted: ${response.totalMinted}/400`);
+        }
+      } catch (apiError: any) {
+        console.warn('API recording failed, but mint was successful:', apiError);
+        // Check if it's a supply limit error
+        if (apiError.message && apiError.message.includes('Maximum supply reached')) {
+          setError('Лимит достигнут во время минта. NFT создан, но может не учитываться.');
+        }
+      }
       
       setMintAddress(signatureString);
       setShowSuccess(true);
@@ -156,9 +227,9 @@ export const MintButton = ({
             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
           </svg>
           {mintAddress ? (
-            <span>Successfully, check  <span onClick={handleTransactionClick} className="text-orange-400 underline cursor-pointer hover:text-orange-300">here</span></span>
+            <span className='font-funnel'>Successfully, check  <span onClick={handleTransactionClick} className="text-orange-400 underline cursor-pointer hover:text-orange-300">here</span></span>
           ) : (
-            <span>Successfully minted </span>
+            <span className='font-funnel'>Successfully minted </span>
           )}
         </div>
       )}

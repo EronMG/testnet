@@ -1,8 +1,5 @@
-@font-face {
-  font-family: 'Funnel Display';
-  src: url('./fonts/Funnel Display.ttf') format('truetype');
-  font-weight: 300 800;
-  font-display: swap;
+@import url('https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300..800&display=swap');
+@import 'tailwindcss';
+@theme {
+  --font-funnel: "Funnel Display", "sans-serif"; 
 }
-
-@import "tailwindcss";

@@ -39,7 +39,6 @@ function App() {
 					<a href="https://twitter.com/fogalio" target="_blank" rel="noopener noreferrer">
 					<BsTwitterX />
 					</a>
-
 					</div>
 						<ConnectButton />
 				</div>
@@ -97,7 +96,7 @@ function App() {
       gradient={false}
 	  direction='right'
       speed={90}
-      className="font-funnel font-sans text-white py-4 text-2xl"
+      className="font-funnel  text-white py-4 text-2xl"
     >
       on FogoChain Testnet&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;on FogoChain Testnet&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;on FogoChain Testnet&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;on FogoChain Testnet&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;on FogoChain Testnet&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;on FogoChain Testnet&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;on FogoChain Testnet&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;on FogoChain Testnet&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;on FogoChain Testnet&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;on FogoChain Testnet&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;on FogoChain Testnet&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     </Marquee>
