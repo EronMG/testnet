@@ -1,0 +1,57 @@
+<svg width="300" height="350" viewBox="0 0 300 350" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background landscape -->
+  <defs>
+    <linearGradient id="skyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#87CEEB;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#98FB98;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="groundGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#90EE90;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#228B22;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Sky -->
+  <rect width="300" height="200" fill="url(#skyGradient)"/>
+  
+  <!-- Ground -->
+  <rect y="200" width="300" height="150" fill="url(#groundGradient)"/>
+  
+  <!-- Road -->
+  <polygon points="120,350 180,350 160,200 140,200" fill="#696969"/>
+  <rect x="145" y="220" width="10" height="20" fill="#FFFF00"/>
+  <rect x="145" y="260" width="10" height="20" fill="#FFFF00"/>
+  <rect x="145" y="300" width="10" height="20" fill="#FFFF00"/>
+  
+  <!-- Character -->
+  <!-- Head -->
+  <circle cx="150" cy="180" r="25" fill="#FDBCB4"/>
+  
+  <!-- Hair -->
+  <path d="M 125 165 Q 150 145 175 165 Q 175 155 150 150 Q 125 155 125 165" fill="#8B4513"/>
+  
+  <!-- Sunglasses -->
+  <rect x="135" y="170" width="30" height="15" rx="7" fill="#000000"/>
+  <circle cx="142" cy="177" r="6" fill="#333333"/>
+  <circle cx="158" cy="177" r="6" fill="#333333"/>
+  
+  <!-- Body -->
+  <rect x="135" y="205" width="30" height="40" rx="5" fill="#D2691E"/>
+  
+  <!-- Arms -->
+  <rect x="120" y="210" width="15" height="25" rx="7" fill="#FDBCB4"/>
+  <rect x="165" y="210" width="15" height="25" rx="7" fill="#FDBCB4"/>
+  
+  <!-- Legs -->
+  <rect x="140" y="245" width="8" height="30" rx="4" fill="#000080"/>
+  <rect x="152" y="245" width="8" height="30" rx="4" fill="#000080"/>
+  
+  <!-- Shoes -->
+  <ellipse cx="144" cy="280" rx="6" ry="4" fill="#000000"/>
+  <ellipse cx="156" cy="280" rx="6" ry="4" fill="#000000"/>
+  
+  <!-- Box/Package -->
+  <rect x="125" y="225" width="12" height="12" fill="#8B4513"/>
+  <rect x="126" y="226" width="10" height="10" fill="#DEB887"/>
+  <text x="131" y="234" font-family="Arial" font-size="8" text-anchor="middle" fill="#654321">📦</text>
+</svg>

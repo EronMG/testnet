@@ -1,0 +1,5 @@
+/* SupplyBar.css */
+.progress-bar {
+    transition: width 0.5s ease-in-out;
+    will-change: width;
+}
