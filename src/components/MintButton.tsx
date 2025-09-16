@@ -9,7 +9,6 @@ export const MintButton = ({
   metadataUri, 
   name, 
   onMintSuccess,
-  isMinted = false,
   sellerFeeBasisPoints = 0
 }: {
   metadataUri: string;
