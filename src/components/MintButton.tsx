@@ -193,7 +193,12 @@ export const MintButton = ({
       onMintSuccess?.();
       
     } catch (e: any) {
-      setError(e?.message ?? 'Ошибка минта');
+      console.error('Mint error:', e);
+      if (e?.message?.includes('0x1') || e?.message?.includes('insufficient funds')) {
+        setError('insufficient funds');
+      } else {
+        setError(e?.message ?? 'error during mint');
+      }
     } finally {
       setLoading(false);
     }
