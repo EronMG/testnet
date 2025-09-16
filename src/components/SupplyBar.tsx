@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import './SupplyBar.css'; // Создадим этот файл для анимаций
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://nft-mint-tracker.onrender.com';
 
 export const SupplyBar = ({ 
   maxSupply = 400,
@@ -39,7 +39,7 @@ export const SupplyBar = ({
     fetchMintCount();
   }, [refreshCounter]);
 
-  const percent = Math.min(100, Math.round((supply / maxSupply) * 100));
+  const percent = Math.min(100, Math.floor((supply / maxSupply) * 100));
 
   return (
     <div className="w-full space-y-3 lg:space-y-4 font-funnel">

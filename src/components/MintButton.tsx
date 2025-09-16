@@ -5,7 +5,7 @@ import { createNft } from '@metaplex-foundation/mpl-token-metadata';
 import { generateSigner, percentAmount } from '@metaplex-foundation/umi';
 import { base58 } from '@metaplex-foundation/umi/serializers';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://nft-mint-tracker.onrender.com';
 
 export const MintButton = ({ 
   metadataUri, 
