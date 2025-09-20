@@ -17,7 +17,6 @@ function App() {
 		setShowMintAnimation(true);
 		setTimeout(() => {
 			setShowMintAnimation(false);
-			// Reset isMinted after 3 seconds to allow another mint
 			setTimeout(() => {
 				setIsMinted(false);
 			}, 3000);
@@ -27,7 +26,6 @@ function App() {
 	return (
 		<AppWalletProvider>
 			<div className="fixed inset-0 bg-gradient-to-br bg-[#020617] text-white overflow-hidden font-funnel">
-				{/* Header */}
 				<div className="relative z-10 flex justify-between items-center p-6">
 					<div className="flex items-center space-x-2">
 						<img src="/fogalio-logo.png" alt="" className="w-32" />
@@ -45,7 +43,6 @@ function App() {
 
 				<div className="relative flex items-center justify-center min-h-[calc(95vh-120px)] px-6">
 					<div className="flex items-stretch justify-center space-x-8 lg:space-x-16 xl:space-x-24 max-w-7xl w-full">
-						{/* NFT Card */}
 						<div className="relative flex flex-col justify-center w-1/2 max-w-md">
 								<img src="/323.png" alt="Fogalio Testnet NFT" className="w-full h-auto object-cover rounded-4xl" />
 							<div className="text-center left-[40%] bottom-[-30px] absolute mt-4 text-gray-300 font-medium text-sm lg:text-base">

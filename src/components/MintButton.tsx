@@ -5,7 +5,7 @@ import { createNft } from '@metaplex-foundation/mpl-token-metadata';
 import { generateSigner, percentAmount } from '@metaplex-foundation/umi';
 import { base58 } from '@metaplex-foundation/umi/serializers';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://nft-mint-tracker.onrender.com';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://1111-rust.vercel.app';
 
 export const MintButton = ({ 
   metadataUri, 
@@ -93,7 +93,7 @@ export const MintButton = ({
         body: JSON.stringify({
           walletAddress,
           transactionSignature,
-          mintAddress: transactionSignature // Using signature as mint identifier
+          mintAddress: transactionSignature 
         }),
       });
 
@@ -117,12 +117,12 @@ export const MintButton = ({
 
   const onMint = useCallback(async () => {
     if (!wallet.connected) {
-      setError('Сначала подключите кошелёк.');
+      setError('First, connect your wallet.');
       return;
     }
 
     if (hasAlreadyMinted) {
-      setError('Этот кошелёк уже заминтил NFT. Один кошелёк = один NFT.');
+      setError('This wallet has already minted an NFT. One wallet = one NFT.');
       return;
     }
 
@@ -131,12 +131,11 @@ export const MintButton = ({
     setMintAddress(null);
     
     try {
-      // Check current supply before minting
       const supplyResponse = await fetch(`${API_BASE_URL}/api/mint-count`);
       if (supplyResponse.ok) {
         const supplyData = await supplyResponse.json();
         if (supplyData.count >= 400) {
-          setError('Максимальный лимит достигнут! Все 400 NFT уже заминчены.');
+          setError('Max limit reached! All 400 NFTs have already been minted.');
           setLoading(false);
           return;
         }
@@ -151,12 +150,11 @@ export const MintButton = ({
           const metadata = await response.json();
           nftName = metadata.name;
         } catch (e) {
-          console.error('Не удалось загрузить метаданные для получения имени:', e);
+          console.error('Failed to load metadata to get name:', e);
           nftName = 'Fogo NFT';
         }
       }
       
-      // Создаём NFT
       const txBuilder = await createNft(umi, {
         mint,
         payer: umi.identity,
@@ -168,12 +166,10 @@ export const MintButton = ({
       });
       
       const { signature } = await txBuilder.sendAndConfirm(umi);
-      
-      // Конвертируем signature в base58 строку
+
       const signatureString = base58.deserialize(signature)[0];
       const walletAddress = wallet.publicKey!.toBase58();
       
-      // Записываем минт в API
       try {
         const response = await recordMintToAPI(walletAddress, signatureString);
         if (response.totalMinted) {
@@ -181,9 +177,8 @@ export const MintButton = ({
         }
       } catch (apiError: any) {
         console.warn('API recording failed, but mint was successful:', apiError);
-        // Check if it's a supply limit error
         if (apiError.message && apiError.message.includes('Maximum supply reached')) {
-          setError('Лимит достигнут во время минта. NFT создан, но может не учитываться.');
+          setError('Limit reached during mint. NFT created but may not be counted.');
         }
       }
       

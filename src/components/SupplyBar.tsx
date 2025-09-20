@@ -2,10 +2,12 @@
 import { useEffect, useState } from 'react';
 import './SupplyBar.css'; // Создадим этот файл для анимаций
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://nft-mint-tracker.onrender.com';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://1111-rust.vercel.app';
+
+const POLLING_INTERVAL = 60000; // 1 minute in milliseconds
 
 export const SupplyBar = ({ 
-  maxSupply = 400,
+  maxSupply = 200,
   refreshCounter = 0 
 }: { 
   maxSupply?: number;
@@ -13,30 +15,40 @@ export const SupplyBar = ({
 }) => {
   const [supply, setSupply] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchMintCount = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/api/mint-count`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch mint count');
+      }
+
+      const data = await response.json();
+      setSupply(data.count);
+      setError(null);
+    } catch (error) {
+      console.error('Error fetching mint count:', error);
+      setError('Failed to update mint count');
+      // Fallback to localStorage if API is not available
+      const mintedWallets = JSON.parse(localStorage.getItem('mintedWallets') || '[]');
+      setSupply(mintedWallets.length);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchMintCount = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`${API_BASE_URL}/api/mint-count`);
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch mint count');
-        }
-
-        const data = await response.json();
-        setSupply(data.count);
-      } catch (error) {
-        console.error('Error fetching mint count:', error);
-        // Fallback to localStorage if API is not available
-        const mintedWallets = JSON.parse(localStorage.getItem('mintedWallets') || '[]');
-        setSupply(mintedWallets.length);
-      } finally {
-        setLoading(false);
-      }
-    };
-
+    // Initial fetch
     fetchMintCount();
+
+    // Set up polling
+    const intervalId = setInterval(fetchMintCount, POLLING_INTERVAL);
+
+    // Clean up interval on unmount
+    return () => clearInterval(intervalId);
   }, [refreshCounter]);
 
   const percent = Math.min(100, Math.floor((supply / maxSupply) * 100));
